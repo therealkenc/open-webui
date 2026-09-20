@@ -426,15 +426,19 @@ def convert_output_to_messages(
         for output_item in pending_tool_outputs:
             output_parts = output_item.get('output', [])
             content = ''
+            content_parts = []
             image_urls = []
             for part in output_parts:
                 if part.get('type') == 'input_text':
                     output_text = part.get('text', '')
-                    content += str(output_text) if not isinstance(output_text, str) else output_text
+                    output_text = str(output_text) if not isinstance(output_text, str) else output_text
+                    content += output_text
+                    content_parts.append({**part, 'text': output_text})
                 elif part.get('type') == 'input_image':
                     url = part.get('image_url', '')
                     if url:
                         image_urls.append(url)
+                        content_parts.append(dict(part))
 
             if flatten_tool_images:
                 messages.append(
@@ -446,14 +450,13 @@ def convert_output_to_messages(
                 )
                 pending_tool_image_urls.extend(image_urls)
             elif image_urls:
+                # Keep text adjacent to its image when replaying multimodal tool
+                # results through Responses (e.g. before/after screenshots).
                 messages.append(
                     {
                         'role': 'tool',
                         'tool_call_id': output_item.get('call_id', ''),
-                        'content': [
-                            {'type': 'input_text', 'text': content},
-                            *[{'type': 'input_image', 'image_url': url} for url in image_urls],
-                        ],
+                        'content': content_parts,
                     }
                 )
             else:
