@@ -27,7 +27,7 @@ at the base revision. It changes two Python modules and no schema or frontend.
 docker build -f Dockerfile.local -t open-webui:local-responses-images .
 ```
 
-This is a pinned local deployment recipe. When rebasing onto a different upstream
+This is a pinned local deployment recipe. When updating to a different upstream
 release, update the base image and verify backend/dependency compatibility.
 
 ## Regression tests
@@ -72,8 +72,8 @@ not need a bind mount of the screenshot directory.
 
 The upstream 0.0.82 screenshot tool still omits ImageContent when `filename` is
 specified. It remains available on the server for compatibility, but is no longer
-exposed to Qwen. See `LOCAL_SCREENSHOT_TOOLS.md` in the companion Playwright MCP repository
-for the small build patch and its protocol regression tests.
+exposed to Qwen. See `LOCAL_SCREENSHOT_TOOLS.md` in the companion Playwright MCP
+repository for the small build patch and its protocol regression tests.
 
 The deployed storage refinement separates screenshots from Playwright's generic
 diagnostics. `PLAYWRIGHT_MCP_SCREENSHOT_DIR` targets

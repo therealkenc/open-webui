@@ -91,8 +91,9 @@ and [therealkenc/playwright-mcp: feat/local-screenshot-tools](https://github.com
 The initial implementation commits are OpenWebUI `9cf317869` and Playwright
 `3b23607`; subsequent documentation commits carry these maintenance records.
 `origin` points to the personal fork over SSH; `upstream` retains the original
-project remote. These branch links identify the customized code even when a
-fork's default branch differs.
+project remote. Both forks use the customized branches above as their default
+branches, so a fresh clone includes these changes and notes. The original `main`
+branches remain available as the initial upstream baselines.
 
 | Repository | Development branch | Starting upstream commit |
 | --- | --- | --- |

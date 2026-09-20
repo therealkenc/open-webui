@@ -40,15 +40,15 @@ A new chat and a direct HTTP SDK probe succeeded. The timing matches upstream's
 five-second heartbeat deadline, although the cause was not conclusively proven.
 The deployment now sets `PLAYWRIGHT_MCP_PING_TIMEOUT_MS=30000` to tolerate brief
 client stalls; subsequent save/process/read verification passed. The temporary
-fixture server on port8932 was stopped after the checks.
+fixture server on port 8932 was stopped after the checks.
 
 ## Code, checks, and maintenance
 
 Source: `~/Devel/playwright-mcp`, branch `feat/local-screenshot-tools`,
 initially based on `f1257a5a67aff872f947fae274759f7d54853862`. The small
-build-time patch modifies only the pinned
-Playwright bundle's screenshot module. No MCP proxy or another full monorepo
-checkout is involved. See `LOCAL_SCREENSHOT_TOOLS.md` there.
+build-time patch modifies only the pinned Playwright bundle's screenshot module.
+No MCP proxy or another full monorepo checkout is involved. See
+`LOCAL_SCREENSHOT_TOOLS.md` there.
 
 Image: `playwright-mcp:local-screenshot-tools`.
 Rebuild/reapply: `~/scripts/playwright-mcp-install.sh` (0755).
@@ -61,8 +61,8 @@ check confirmed patch rejection without writing on an unexpected bundle. Actual
 Streamable HTTP was also checked from the OpenWebUI container.
 
 No open-terminal source code was changed. The terminal's writable layer contained
-installed software, so recreation used a
-local committed image. Independent comparison confirmed configuration, secrets,
+installed software, so recreation used a local committed image. Independent
+comparison confirmed configuration, secrets,
 ports, network aliases, Documents mount, and the named home volume were preserved.
 Its canonical Compose file was updated only for the rest service's image and
 new bind. Both active containers are healthy with `unless-stopped` restart policy.
@@ -98,8 +98,9 @@ filter (19 selected tools): `browser_console_messages` and
 so Qwen does not need terminal log-file access. The system prompt records this.
 Operation failures and page error counts remain in ordinary MCP responses.
 
-The final browser-diagnostics check passed through Responses: Qwen read `ORCHID-629` and the teal circle, correctly
-reported intentional warning/error messages and HTTP 503 for `/expected-failure`,
+The final browser-diagnostics check passed through Responses: Qwen read
+`ORCHID-629` and the teal circle, correctly reported intentional warning/error
+messages and HTTP 503 for `/expected-failure`,
 and saved `diagnostics-check.png`. Independent inspection confirmed the image,
 only two PNGs in Screenshots, one console log in cache, and no YAML. No terminal
 or source-reading fallback was used. Her extra approximate circle-size estimate
