@@ -17,7 +17,7 @@ the original failure and superseded approaches; it is not current setup guidance
 | Component | Change | Responsibility |
 | --- | --- | --- |
 | OpenWebUI | Two backend utility modules, three test files, pinned overlay image | Preserve native MCP image results for the UI, history, and model |
-| Playwright MCP | Checked build patch of the pinned bundle | Filename-independent screenshot images and shared artifact exports |
+| Playwright MCP | Checked build patch of the pinned bundle, bounded PDF renderer | Filename-independent screenshot images, PDF page previews, and shared artifact exports |
 | open-terminal | Deployment configuration only: shared Downloads bind and local image snapshot | Optional file inspection and ImageMagick processing |
 | llama.cpp | No changes from this work | Existing fork already supports multimodal `/v1/responses` tool output |
 | SearXNG | Container/configuration maintenance | URL discovery through OpenWebUI's `search_web` |
@@ -61,9 +61,12 @@ Paths beginning with `~/` describe this installation, not a universal prerequisi
 Playwright and open-terminal share `/home/user/Downloads`, backed by
 `~/scripts/playwright-mcp/artifacts`. Existing screenshots were preserved.
 `PLAYWRIGHT_MCP_ARTIFACT_DIR` routes named and automatically named screenshots,
-PDFs, explicit exports and browser downloads there. Screenshot pixels are returned
-regardless of filename when `--image-responses allow` is set; PDFs return paths
-only. The two-tool experiment was removed. See [current setup](BROWSER_ARTIFACTS.md).
+PDFs, explicit exports and browser downloads there. Screenshot pixels and PDF
+page previews are returned regardless of filename with `--image-responses allow`.
+`browser_pdf_read` inspects saved/downloaded PDFs and later page windows without
+an active browser. The two-tool screenshot experiment was removed. See
+[current setup](BROWSER_ARTIFACTS.md) for page limits, DPI, sparse-page filtering
+and migration of the OpenWebUI tool filter to 19 tools.
 
 Generic output remains `/home/user/.cache/playwright-mcp`, backed by
 `~/scripts/playwright-mcp/cache`. Automatic logs and snapshots stay there.
@@ -109,10 +112,12 @@ they do not merely repeat a copied helper.
 
 Playwright MCP implementation lives in the upstream Playwright monorepo, shipped
 here through `playwright-core`. Its fork contains `Dockerfile.local`,
-`local/patch-screenshot-tools.cjs`, `local/test-screenshot-tools.cjs`, a portable
-`local/compose.example.yml`, and `LOCAL_SCREENSHOT_TOOLS.md`. The bundled screenshot image policy, user-export resolver and browser-download
-routing are patched. Microsoft's original server entrypoint, transport,
-remain in use.
+`local/patch-screenshot-tools.cjs`, `local/pdf-renderer.mjs`,
+`local/pdf-preview.cjs`, pinned rendering dependencies under `local/`, regression
+suites, a portable `local/compose.example.yml`, and `LOCAL_SCREENSHOT_TOOLS.md`.
+The bundled screenshot image policy, user-export resolver, browser-download
+routing, PDF registration and image captions are patched. Microsoft's original
+server entrypoint and transport remain in use.
 
 For either repository, fetch and integrate upstream in an inspection branch from
 the published development branch. For example, in OpenWebUI:
@@ -150,14 +155,21 @@ The [OpenWebUI implementation note](LOCAL_VISUAL_BROWSER.md) has exact build/tes
 commands. The initial baseline is **27 passing regression tests**.
 
 For Playwright, an upstream image change will deliberately fail the full-bundle
-SHA-256 check. Inspect the new screenshot implementation before updating both
-the image digest and patch hash. Check whether upstream now supplies equivalent
+SHA-256 check. Inspect the new screenshot, artifact and PDF implementations before
+updating both the image digest and patch hash. Check whether upstream now supplies equivalent
 tools or settings, and prefer retiring local behavior where the invariants hold.
 Do not just replace the hash to make the build pass. Preserve:
 
 - One `browser_take_screenshot` returns native pixels with or without a filename;
   the upstream global image-response mode remains authoritative.
-- Named and automatic screenshots/PDFs share Downloads. PDFs return paths only.
+- Named and automatic screenshots/PDFs share Downloads. PDF saves return their
+  path plus bounded native page previews when image responses are enabled.
+- The PDF reader can inspect later windows and downloaded PDFs without a live
+  browser. Source page labels, skip reports and continuation instructions retain
+  original page numbering, including pages omitted from previews.
+- Page limits count source pages examined. DPI and the compressed-PNG threshold
+  remain operator settings, with documented near-white/tracking-pixel rationale.
+  Preview failures return text and preserve saved PDFs; no error images.
 - Capture/encoding, scale and element/full-page validation stay upstream.
 - Artifact paths cannot escape the configured root, including through symlinks
   into the cache; upstream root checks remain enforced.
@@ -172,11 +184,20 @@ docker build -f Dockerfile.local -t playwright-mcp:local-screenshot-tools .
 docker run --rm --network none --entrypoint node \
   -v "$PWD/local:/tests:ro" \
   playwright-mcp:local-screenshot-tools /tests/test-screenshot-tools.cjs
+docker run --rm --network none --entrypoint node \
+  -v "$PWD/local/test-pdf-renderer.mjs:/app/local/test-pdf-renderer.mjs:ro" \
+  playwright-mcp:local-screenshot-tools /app/local/test-pdf-renderer.mjs
+docker run --rm --network none --entrypoint node \
+  -v "$PWD/local:/tests:ro" \
+  playwright-mcp:local-screenshot-tools /tests/test-pdf-tools.cjs
 ```
 
-The recorded baseline is **10 passing real MCP/Chromium groups**, plus rejected
-unexpected bundle input without modification, JavaScript syntax checks, and
-Compose validation. These tests use a local HTTP fixture with no external network.
+The current baseline is **31 passing groups**: 10 screenshot/artifact MCP groups,
+9 PDF renderer groups and 12 PDF MCP/Chromium groups. Bundle rejection and Compose
+validation also pass. These tests use local fixtures with no external network.
+The live PDF save/read acceptance is recorded in BROWSER_ARTIFACTS.md.
+Recheck sparse-page calibration when upgrading PDF.js/canvas or changing DPI:
+compressed PNG size is a heuristic whose behavior depends on those choices.
 
 Before deploying an upgrade, keep the previous image and configuration, check
 `docker compose config --quiet`, and verify the live native HTTP transport from

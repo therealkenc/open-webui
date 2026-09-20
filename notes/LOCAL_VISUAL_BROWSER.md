@@ -59,7 +59,9 @@ estimation was intentionally excluded from this test.
 The companion image now exposes one `browser_take_screenshot`. It returns native
 pixels and saves a file regardless of whether a filename was supplied; the global
 `--image-responses allow|omit` setting controls pixels. The earlier view/save
-split was removed. PDF export returns a saved path only.
+split was removed. `browser_pdf_save` now returns a saved PDF path and bounded
+page previews under the same global image policy. `browser_pdf_read` previews
+saved/downloaded PDFs and later source-page windows without an active browser.
 
 Playwright and open-terminal share `/home/user/Downloads`, backed by
 `~/scripts/playwright-mcp/artifacts`. `PLAYWRIGHT_MCP_ARTIFACT_DIR` routes named
@@ -67,6 +69,13 @@ and automatic user exports there, while generic output/cache remains separate.
 Terminal `read_file` can inspect saved images through the existing pipeline.
 OpenWebUI and llama.cpp receive bytes through APIs and need no shared mount.
 No additional OpenWebUI source change was needed for this revision.
+
+The Playwright server defaults to 20 source pages per call at 96 DPI. Its
+configurable compressed-PNG size threshold omits near-white previews that can
+confuse vision models, while reporting skipped source pages explicitly. DPI and
+the threshold are server settings, not model arguments. Page images use native
+MCP content and the existing authorized image/history path above. The original
+PDF is saved; preview PNGs are sent directly rather than added to Downloads.
 
 See [current artifact setup](BROWSER_ARTIFACTS.md) for routing, deployment and
 validation, and the companion `LOCAL_SCREENSHOT_TOOLS.md` for build/test details.
