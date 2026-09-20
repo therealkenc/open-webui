@@ -54,50 +54,24 @@ status after a measured click. A separate saved-image test survived browser
 reload with the fixture server stopped and no further tool calls. Coordinate
 estimation was intentionally excluded from this test.
 
-## Local Playwright screenshot tools
+## Local Playwright screenshots and artifacts
 
-The subsequently installed local Playwright image exposes `browser_view_screenshot`
-(native pixels plus an automatically named file) and `browser_save_screenshot`
-(file only, with optional name). OpenWebUI selects these instead of the original
-`browser_take_screenshot`. The local Qwen instructions prefer viewing and identify
-`/home/user/Pictures/Screenshots` as the browser/terminal shared screenshot directory.
-Terminal `read_file` can inspect a saved or processed image through this same
-multimodal pipeline. No additional OpenWebUI code change was needed.
+The companion image now exposes one `browser_take_screenshot`. It returns native
+pixels and saves a file regardless of whether a filename was supplied; the global
+`--image-responses allow|omit` setting controls pixels. The earlier view/save
+split was removed. PDF export returns a saved path only.
 
-The primary path is Playwright ImageContent → OpenWebUI stored image reference →
-authorized bytes in a Responses `function_call_output` → llama.cpp/Qwen vision.
-The optional file-processing path is save → terminal/ImageMagick → terminal
-`read_file` → that same model-facing image pipeline. OpenWebUI and llama.cpp do
-not need a bind mount of the screenshot directory.
+Playwright and open-terminal share `/home/user/Downloads`, backed by
+`~/scripts/playwright-mcp/artifacts`. `PLAYWRIGHT_MCP_ARTIFACT_DIR` routes named
+and automatic user exports there, while generic output/cache remains separate.
+Terminal `read_file` can inspect saved images through the existing pipeline.
+OpenWebUI and llama.cpp receive bytes through APIs and need no shared mount.
+No additional OpenWebUI source change was needed for this revision.
 
-The upstream 0.0.82 screenshot tool still omits ImageContent when `filename` is
-specified. It remains available on the server for compatibility, but is no longer
-exposed to Qwen. See `LOCAL_SCREENSHOT_TOOLS.md` in the companion Playwright MCP
-repository for the small build patch and its protocol regression tests.
-
-The deployed storage refinement separates screenshots from Playwright's generic
-diagnostics. `PLAYWRIGHT_MCP_SCREENSHOT_DIR` targets
-`/home/user/Pictures/Screenshots`, backed by
-`~/scripts/playwright-mcp/artifacts`; generic output targets
-`/home/user/.cache/playwright-mcp`, backed by
-`~/scripts/playwright-mcp/cache`. `--snapshot-mode none` disables automatic
-YAML snapshots while explicit `browser_snapshot` still returns inline text.
-Native `browser_console_messages` and `browser_network_requests` provide inline
-diagnostics when called without a filename. Fourteen Playwright MCP/Chromium
-regression groups passed, including seven covering the refined storage and
-diagnostics behavior; these are separate from the 27 OpenWebUI tests above.
-
-Live Qwen validation used navigate, view, console, network, and save tools. It
-read the unseen `ORCHID-629` code and teal circle from the screenshot, reported
-the fixture's warning/error and deliberate HTTP 503 request, and saved
-`diagnostics-check.png`. Independent inspection confirmed two PNGs in Screenshots,
-one console log in the separate cache, and no YAML files. This confirms image and
-diagnostics routing, not geometric or coordinate-estimation accuracy.
-
-Page console logs are distinct from MCP operation failures and container logs.
-Screenshots are user artifacts with manual cleanup; diagnostics/cache retention
-is managed separately. Current deployment details and validation status belong
-in the Playwright repository's `LOCAL_SCREENSHOT_TOOLS.md`.
+See [current artifact setup](BROWSER_ARTIFACTS.md) for routing, deployment and
+validation, and the companion `LOCAL_SCREENSHOT_TOOLS.md` for build/test details.
+Historical tests from the two-tool experiment remain in
+[the archived view/save record](playwright-view-save-status.md).
 
 ## Patch boundary
 

@@ -1,5 +1,9 @@
 # Historical investigation: why MCP screenshots lost their pixels
 
+> Historical record. The view/save experiment and Pictures/Screenshots routing
+> below are superseded by [the current single-tool Downloads setup](BROWSER_ARTIFACTS.md).
+> Preserve earlier validation as history; do not use it as current configuration.
+
 Recorded 2026-09-19. **Superseded by the working implementation** described in
 [LOCAL_VISUAL_BROWSER.md](LOCAL_VISUAL_BROWSER.md) and [the maintenance index](README.md).
 This is retained as root-cause history, not a current task list or deployment guide.

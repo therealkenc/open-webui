@@ -1,5 +1,9 @@
 # Visual browsing is working through Responses
 
+> Historical record. The view/save experiment and Pictures/Screenshots routing
+> below are superseded by [the current single-tool Downloads setup](BROWSER_ARTIFACTS.md).
+> Preserve earlier validation as history; do not use it as current configuration.
+
 Verified 2026-09-19. OpenWebUI runs `open-webui:local-responses-images`, and the
 local Qwen provider uses `/v1/responses`. Native MCP screenshots reach Qwen as
 multimodal tool results. No llama.cpp changes or MCP wrapper were required.

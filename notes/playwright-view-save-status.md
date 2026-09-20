@@ -1,5 +1,9 @@
 # Playwright visual browsing: view and save
 
+> Historical record. The view/save experiment and Pictures/Screenshots routing
+> below are superseded by [the current single-tool Downloads setup](BROWSER_ARTIFACTS.md).
+> Preserve earlier validation as history; do not use it as current configuration.
+
 Deployed and verified 2026-09-19 (Vancouver time).
 
 | Tool | Result | Artifact |

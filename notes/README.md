@@ -7,7 +7,7 @@ truth; exported patches and screenshots in a Codex scratch directory are not
 required to maintain this work.
 
 Start with [the OpenWebUI implementation](LOCAL_VISUAL_BROWSER.md) and
-[the Playwright deployment record](playwright-view-save-status.md). The
+[the current artifact setup](BROWSER_ARTIFACTS.md). The
 [OpenWebUI validation record](openwebui-visual-browser-status.md) records the live
 checks. The [historical investigation](openwebui-playwright-handoff.md) explains
 the original failure and superseded approaches; it is not current setup guidance.
@@ -17,8 +17,8 @@ the original failure and superseded approaches; it is not current setup guidance
 | Component | Change | Responsibility |
 | --- | --- | --- |
 | OpenWebUI | Two backend utility modules, three test files, pinned overlay image | Preserve native MCP image results for the UI, history, and model |
-| Playwright MCP | Checked build patch of the pinned screenshot module | Separate view/save tools and screenshot storage from generic output |
-| open-terminal | Deployment configuration only: shared screenshot bind and local image snapshot | Optional file inspection and ImageMagick processing |
+| Playwright MCP | Checked build patch of the pinned bundle | Filename-independent screenshot images and shared artifact exports |
+| open-terminal | Deployment configuration only: shared Downloads bind and local image snapshot | Optional file inspection and ImageMagick processing |
 | llama.cpp | No changes from this work | Existing fork already supports multimodal `/v1/responses` tool output |
 | SearXNG | Container/configuration maintenance | URL discovery through OpenWebUI's `search_web` |
 
@@ -37,7 +37,7 @@ Playwright MCP ImageContent
   → local llama.cpp / Qwen vision
 ```
 
-The optional processing path is `browser_save_screenshot` → terminal/ImageMagick
+The optional processing path is saved screenshot → terminal/ImageMagick
 → terminal `read_file` → the same image forwarding path. OpenWebUI and llama.cpp
 need no screenshot-directory mount. A path in plain tool text does not itself
 supply pixels to the model. No MCP compatibility wrapper is active.
@@ -58,17 +58,18 @@ Paths beginning with `~/` describe this installation, not a universal prerequisi
 | `open-terminal` | Existing OpenWebUI terminal integration | Existing named home volume and Documents bind retained |
 | `searxng-core` | `http://virbr0.therealkenc.com:8082/search`; `~/scripts/searxng-install.sh` | `~/scripts/searxng` and existing `core-data` volume |
 
-Playwright and open-terminal share `/home/user/Pictures/Screenshots`, backed by
-`~/scripts/playwright-mcp/artifacts`. Playwright's generic output lives separately
-at `/home/user/.cache/playwright-mcp`, backed by `~/scripts/playwright-mcp/cache`.
-This is not the host user's personal Pictures library.
+Playwright and open-terminal share `/home/user/Downloads`, backed by
+`~/scripts/playwright-mcp/artifacts`. Existing screenshots were preserved.
+`PLAYWRIGHT_MCP_ARTIFACT_DIR` routes named and automatically named screenshots,
+PDFs, explicit exports and browser downloads there. Screenshot pixels are returned
+regardless of filename when `--image-responses allow` is set; PDFs return paths
+only. The two-tool experiment was removed. See [current setup](BROWSER_ARTIFACTS.md).
 
-The local Playwright environment variable `PLAYWRIGHT_MCP_SCREENSHOT_DIR` routes
-both new screenshot tools to the shared Pictures directory. Stock `--output-dir`
-targets the generic cache, whose 256 MiB retention limit does not touch screenshots.
-Keep those roots separate and non-nested. Screenshots require manual cleanup.
-The generic directory may also contain downloads and PDFs; it is not exclusively
-logs.
+Generic output remains `/home/user/.cache/playwright-mcp`, backed by
+`~/scripts/playwright-mcp/cache`. Automatic logs and snapshots stay there.
+Keep the roots separate and non-nested: the 256 MiB cache limit must not touch
+saved artifacts. Downloads require manual cleanup. This is the terminal's home,
+not the host user's personal Downloads directory.
 
 `--snapshot-mode none` disables automatic accessibility YAML. Explicit
 `browser_snapshot` still returns the tree inline without a filename. Native
@@ -109,9 +110,9 @@ they do not merely repeat a copied helper.
 Playwright MCP implementation lives in the upstream Playwright monorepo, shipped
 here through `playwright-core`. Its fork contains `Dockerfile.local`,
 `local/patch-screenshot-tools.cjs`, `local/test-screenshot-tools.cjs`, a portable
-`local/compose.example.yml`, and `LOCAL_SCREENSHOT_TOOLS.md`. Only the bundled
-screenshot module is patched. Microsoft's original server entrypoint, transport,
-and other handlers remain in use.
+`local/compose.example.yml`, and `LOCAL_SCREENSHOT_TOOLS.md`. The bundled screenshot image policy, user-export resolver and browser-download
+routing are patched. Microsoft's original server entrypoint, transport,
+remain in use.
 
 For either repository, fetch and integrate upstream in an inspection branch from
 the published development branch. For example, in OpenWebUI:
@@ -154,14 +155,15 @@ the image digest and patch hash. Check whether upstream now supplies equivalent
 tools or settings, and prefer retiring local behavior where the invariants hold.
 Do not just replace the hash to make the build pass. Preserve:
 
-- View returns native pixels and an automatic saved copy, with no filename argument.
-- Save returns a path without pixels; filenames affect storage, not tool identity.
-- Legacy `browser_take_screenshot` behavior stays unchanged for other clients.
-- Both new tools use upstream capture/encoding, scale, element/full-page validation,
-  root checks, and symlink validation. Absolute and relative paths cannot escape
-  the configured screenshot root; a symlink into the cache must also be rejected.
-- Screenshots and generic-output cleanup remain separate. Native console/network
-  tools and explicit snapshots work with automatic snapshots disabled.
+- One `browser_take_screenshot` returns native pixels with or without a filename;
+  the upstream global image-response mode remains authoritative.
+- Named and automatic screenshots/PDFs share Downloads. PDFs return paths only.
+- Capture/encoding, scale and element/full-page validation stay upstream.
+- Artifact paths cannot escape the configured root, including through symlinks
+  into the cache; upstream root checks remain enforced.
+- Browser attachment downloads and explicitly saved exports use Downloads.
+  Automatic diagnostics and their eviction stay separate; inline console/network
+  and explicit snapshots still work with automatic snapshots disabled.
 
 Run from the Playwright checkout:
 
@@ -172,7 +174,7 @@ docker run --rm --network none --entrypoint node \
   playwright-mcp:local-screenshot-tools /tests/test-screenshot-tools.cjs
 ```
 
-The recorded baseline is **14 passing real MCP/Chromium groups**, plus rejected
+The recorded baseline is **10 passing real MCP/Chromium groups**, plus rejected
 unexpected bundle input without modification, JavaScript syntax checks, and
 Compose validation. These tests use a local HTTP fixture with no external network.
 
@@ -192,22 +194,19 @@ against the same data directory. The local launcher contains installation
 credentials and is not an idempotent container replacement tool; inspect it
 before rerunning, and do not publish it.
 
-The pre-separation Playwright image was retained as
-`playwright-mcp:before-cache-separation-20260919`. To revert just that refinement,
-use its matching older Compose configuration: the earlier generic output and
-working directory were both `/home/user/Pictures/Screenshots`, without the new
-screenshot environment variable or `--snapshot-mode none`. This deliberately
-restores mixed image/log/YAML output. Keep `--pull never` when deploying retained
-local images. To revert the whole screenshot-tool addition, restore the stock
-pinned image and select `browser_take_screenshot` in OpenWebUI again. See the
-Playwright repository's maintenance note for the stock image pin.
-
-Terminal rollback is recorded in
-`~/scripts/recreate-open-terminal-screenshots.sh --rollback`. The original stopped
-container is `open-terminal-before-screenshots-20260920-025754`. The canonical
-terminal Compose file is under `~/Devel/geode-fin/tooling/terminal/`; only the
-REST service image and screenshot bind changed. Preserve its existing environment,
-secrets, ports, aliases, home volume, and Documents mount when recreating it.
+The preceding two-tool Playwright image is retained as
+`playwright-mcp:before-downloads-20260919`. Its matching Compose backup is in
+`~/scripts/playwright-mcp/private-downloads-rollout/playwright-compose-before.yml`.
+Rolling back that experiment also requires its old client tool filter/prompt.
+The new terminal migration helper is
+`~/scripts/recreate-open-terminal-downloads.sh --rollback`; its private journal
+is under the same private-downloads-rollout directory. The retained original is
+`open-terminal-before-downloads-20260920-053607`. Roll back both mounts together
+if needed. The canonical terminal Compose file remains under
+`~/Devel/geode-fin/tooling/terminal/`; only the REST image and artifact bind change.
+Preserve environment, credentials, installed programs, ports, aliases, home volume
+and Documents mount. Local terminal image snapshots contain private configuration
+and must never be published.
 
 Private backups and rollback journals were made during the original session.
 They are intentionally not included in this repository and must be retained
