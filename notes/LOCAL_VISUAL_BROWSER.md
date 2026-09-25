@@ -1,6 +1,8 @@
 # Local MCP image / Responses patch
 
-Branch: `fix/mcp-responses-images`, based on `0a7c15832` (v0.11.3 backend).
+Original branch: `fix/mcp-responses-images`, based on `0a7c15832` (v0.11.3 backend).
+Current deployment uses local `main` and the full source Dockerfile through
+`~/scripts/openwebui-install.sh`; the overlay instructions below are historical.
 See [the maintenance index](README.md) for the companion Playwright fork,
 deployment map, and upstream merge procedure. This document describes the
 OpenWebUI patch on the development branch.

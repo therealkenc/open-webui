@@ -1,5 +1,5 @@
-# Backend-only overlay on the exact v0.11.3 image used by this installation.
-# Rebuild from the repository root: docker build -f Dockerfile.local -t open-webui:local-responses-images .
+# Historical backend-only overlay for the original v0.11.3 deployment.
+# Current installation builds the full source Dockerfile from main.
 FROM ghcr.io/open-webui/open-webui@sha256:8afd2d774834c618a75411b3491cdc5da7396dc464f56a160b937ff2992eb6e4
 
 COPY backend/open_webui/utils/middleware.py /app/backend/open_webui/utils/middleware.py

@@ -1,5 +1,20 @@
 # Local Qwen visual browsing: maintenance notes
 
+## Current OpenWebUI update path (2026-09-24)
+
+Local `main` now carries the MCP image patch and tracks `upstream/main`. The
+installer at `~/scripts/openwebui-install.sh` builds the full checked-out
+Dockerfile, runs the three regression suites, backs up `~/.open-webui`, and
+replaces the container only after a successful build and test run. It keeps the
+prior container for rollback and waits for the new one to become healthy.
+
+From a clean `main` checkout, use `git pull` followed by the installer. An
+upstream change touching the patch may require a merge resolution and test
+review before installation. `Dockerfile.local` and the branch references below
+record the original v0.11.3 overlay deployment; they are no longer the update
+path for this installation. The branch, pinned image, and rollback descriptions
+below describe that original deployment unless a later date is stated.
+
 These notes document the work begun on 2026-09-19 (Vancouver time). They live in
 this fork so the architecture, deployment choices, and upstream-merge checks
 survive the original development session. The repositories are the source of
