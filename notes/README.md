@@ -2,13 +2,16 @@
 
 ## Current OpenWebUI update path (2026-09-24)
 
-Local `main` now carries the MCP image patch and tracks `upstream/main`. The
+Local `main` now carries the MCP image patch and tracks the fork's `origin/main`.
+The fork's default branch is also `main`. The
 installer at `~/scripts/openwebui-install.sh` builds the full checked-out
 Dockerfile, runs the three regression suites, backs up `~/.open-webui`, and
 replaces the container only after a successful build and test run. It keeps the
 prior container for rollback and waits for the new one to become healthy.
 
-From a clean `main` checkout, use `git pull` followed by the installer. An
+Plain `git pull` and VS Code Sync synchronize with the fork. To integrate a new
+upstream release from a clean `main` checkout, run `git fetch upstream`,
+`git merge upstream/main`, the installer, and then `git push origin main`. An
 upstream change touching the patch may require a merge resolution and test
 review before installation. `Dockerfile.local` and the branch references below
 record the original v0.11.3 overlay deployment; they are no longer the update

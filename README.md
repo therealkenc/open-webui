@@ -1,12 +1,12 @@
 # Open WebUI 👋
 
-> Fork maintenance: this checkout's `main` carries the local MCP image patch on
-> upstream Open WebUI. To update, run `git pull` on `main`, then
-> `~/scripts/openwebui-install.sh`. The installer builds the checked-out source,
-> runs the MCP regression tests, backs up local data, and replaces the container.
-> See [visual browsing and multimodal Responses notes](notes/README.md) for the
-> patch and validation details. Resolve any upstream merge conflicts before
-> running the installer.
+> Fork maintenance: `main` carries the local MCP image patch and tracks this
+> fork's `origin/main`. Plain `git pull` and VS Code Sync use the fork. To bring
+> in a new upstream release, run `git fetch upstream` and
+> `git merge upstream/main` on a clean `main`, then
+> `~/scripts/openwebui-install.sh` and `git push origin main`. Resolve any merge
+> conflicts before installing. See [visual browsing and multimodal Responses
+> notes](notes/README.md) for the patch and validation details.
 
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/open-webui/open-webui?style=social)
